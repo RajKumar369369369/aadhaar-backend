@@ -6,8 +6,8 @@ from paddleocr import PaddleOCR
 # ---------------- OCR INITIALIZATION ----------------
 ocr = PaddleOCR(
     lang="en",
-    use_angle_cls=True,
-    use_textline_orientation=True,
+    use_angle_cls=True,  # Set to True
+    use_textline_orientation=False,  # Set to False to avoid conflict
     det=True,
     rec=True,
     cls=False,
