@@ -7,11 +7,11 @@ from paddleocr import PaddleOCR
 ocr = PaddleOCR(
     lang="en",
     #use_angle_cls=True,
-    use_textline_orientation=False,  # This must be False!
-    det=True,
-    rec=True,
+    #use_textline_orientation=False,  # This must be False!
+    #det=True,
+    #rec=True,
     #cls=False,
-    use_gpu=False
+    #use_gpu=False
 )
 
 # ---------------- PREPROCESS IMAGE ----------------
