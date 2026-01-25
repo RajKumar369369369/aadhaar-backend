@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+paddleocr
+paddlepaddle
+opencv-python
+numpy
+python-multipart
+python-dotenv
+sqlalchemy
+psycopg2-binary

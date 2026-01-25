@@ -1,0 +1,26 @@
+import multiprocessing
+import time
+
+def burn_cpu():
+    x = 0
+    while True:
+        x += 1
+        x *= 2
+        x %= 1234567
+
+if __name__ == "__main__":
+    print("🔥 CPU stress started. Press Ctrl+C to stop.")
+    
+    processes = []
+    for _ in range(multiprocessing.cpu_count()):
+        p = multiprocessing.Process(target=burn_cpu)
+        p.start()
+        processes.append(p)
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n🛑 Stopping...")
+        for p in processes:
+            p.terminate()
