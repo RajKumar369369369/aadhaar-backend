@@ -10,7 +10,7 @@ ocr = PaddleOCR(
     use_textline_orientation=False,  # This must be False!
     det=True,
     rec=True,
-    cls=False,
+    #cls=False,
     use_gpu=False
 )
 
