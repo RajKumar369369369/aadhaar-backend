@@ -5,6 +5,7 @@ import tempfile
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from database import engine, get_db
 from models import Base, Person
@@ -21,6 +22,12 @@ from ocr.aadhaar_ocr import run_aadhaar_ocr
 # App init
 # -------------------------------------------------
 app = FastAPI(title="Janasena Backend API")
+
+# Ensure schema exists before creating tables
+SCHEMA_NAME = "janasena"
+with engine.connect() as connection:
+    connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
+    connection.commit()
 
 # Create tables
 Base.metadata.create_all(bind=engine)
