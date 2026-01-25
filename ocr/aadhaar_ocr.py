@@ -6,7 +6,7 @@ from paddleocr import PaddleOCR
 # ---------------- OCR INITIALIZATION ----------------
 ocr = PaddleOCR(
     lang="en",
-    use_angle_cls=True,
+    #use_angle_cls=True,
     use_textline_orientation=False,  # This must be False!
     det=True,
     rec=True,
