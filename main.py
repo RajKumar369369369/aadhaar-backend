@@ -34,7 +34,7 @@ app = FastAPI(title="Janasena Backend API")
 def startup_event():
     global ocr
     print("Initializing PaddleOCR...")
-    ocr = PaddleOCR(lang="en", use_angle_cls=True, use_textline_orientation=True)
+    ocr = PaddleOCR(lang="en")#, use_angle_cls=True, use_textline_orientation=True
     print("PaddleOCR ready!")
 
 # Ensure schema exists before creating tables
