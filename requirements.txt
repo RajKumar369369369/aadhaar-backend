@@ -1,8 +1,8 @@
 fastapi
 uvicorn
-paddleocr
-paddlepaddle==2.5.2
-opencv-python
+paddleocr==3.3.3
+paddlepaddle>=3.0.0
+opencv-python-headless
 numpy
 python-multipart
 python-dotenv
