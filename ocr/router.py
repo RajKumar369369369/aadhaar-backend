@@ -2,12 +2,30 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Query, Depends
 from sqlalchemy.orm import Session
 from typing import Optional
+from datetime import datetime
 from services.ocr_client import call_aadhaar_ocr
 from crud import create_or_update_person
 from database import get_db
 from schemas import PersonCreate  # your existing pydantic schema
 
 router = APIRouter(prefix="/ocr", tags=["OCR"])
+
+
+def convert_dob_format(dob_str: str) -> Optional[str]:
+    """
+    Convert DOB from DD/MM/YYYY format (OCR output) to YYYY-MM-DD (Pydantic date format).
+    Returns None if conversion fails.
+    """
+    if not dob_str:
+        return None
+    
+    try:
+        # Try DD/MM/YYYY format
+        parsed_date = datetime.strptime(dob_str.strip(), "%d/%m/%Y")
+        return parsed_date.strftime("%Y-%m-%d")
+    except ValueError:
+        # If parsing fails, return None
+        return None
 
 
 @router.post("/aadhaar")
@@ -47,7 +65,7 @@ async def aadhaar_ocr(
             "aadhaar_number": ocr_json.get("aadhaar_number") or "",
             "full_name": ocr_json.get("full_name") or "",
             "gender": ocr_json.get("gender") or "",
-            "dob": ocr_json.get("dob") or None,            # schema may accept ISO date string or None
+            "dob": convert_dob_format(ocr_json.get("dob")) or None,  # Convert DD/MM/YYYY to YYYY-MM-DD
             "mobile_number": ocr_json.get("mobile_number") or "",
             "pincode": ocr_json.get("pincode") or "",
             # optional fields you may want to set:
