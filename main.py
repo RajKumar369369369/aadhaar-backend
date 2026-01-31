@@ -1,50 +1,37 @@
 import os
-import requests
-import tempfile
-
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from database import engine, get_db
 from models import Base, Person
-from crud import create_or_update_person, get_by_aadhaar
-from schemas import (
-    PersonCreate,
-    PersonResponse,
-    AadhaarOCRRequest,
-    AadhaarOCRResponse
-)
+from crud import create_or_update_person
+from schemas import PersonCreate, PersonResponse
 
-from paddleocr import PaddleOCR
-import numpy as np
-import cv2
+# 🔹 OCR router (HF API based)
+from ocr.router import router as ocr_router
 
-ocr = None  # Global OCR variable
 
 # -------------------------------------------------
 # App init
 # -------------------------------------------------
-
 app = FastAPI(title="Janasena Backend API")
 
-# PaddleOCR initialization on startup
-@app.on_event("startup")
-def startup_event():
-    global ocr
-    print("Initializing PaddleOCR...")
-    ocr = PaddleOCR(lang="en")#, use_angle_cls=True, use_textline_orientation=True
-    print("PaddleOCR ready!")
+# ✅ NOW app exists → safe to include router
+app.include_router(ocr_router)
 
-# Ensure schema exists before creating tables
+
+# -------------------------------------------------
+# DB init
+# -------------------------------------------------
 SCHEMA_NAME = "janasena"
 with engine.connect() as connection:
     connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
     connection.commit()
 
-# Create tables
 Base.metadata.create_all(bind=engine)
+
 
 # -------------------------------------------------
 # CORS
@@ -57,23 +44,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # -------------------------------------------------
-# PERSON APIs
+# PERSON APIs (UNCHANGED)
 # -------------------------------------------------
 @app.post("/person/submit", response_model=PersonResponse)
 def submit_person(
     data: PersonCreate,
     db: Session = Depends(get_db)
 ):
-    """
-    Receives JSON payload from frontend.
-    Images must already be uploaded to Cloudinary.
-    Stores text fields + image URLs in PostgreSQL.
-    """
     try:
-        person = create_or_update_person(db, data)
-        return person
-
+        return create_or_update_person(db, data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -91,18 +72,3 @@ def get_person_by_aadhaar(
         raise HTTPException(status_code=404, detail="Person not found")
 
     return person
-
-
-
-# New OCR endpoint using global ocr object
-@app.post("/ocr/aadhaar")
-async def ocr_aadhaar(payload: AadhaarOCRRequest):
-    try:
-        resp = requests.get(payload.image_url)
-        img_array = np.frombuffer(resp.content, np.uint8)
-        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-        result = ocr.ocr(img)
-        text_output = [line[1][0] for line in sum(result, [])]
-        return {"text": text_output}
-    except Exception as e:
-        return {"error": str(e)}
